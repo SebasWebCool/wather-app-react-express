@@ -1,14 +1,19 @@
 const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
-require('dotenv').config(); 
+require('dotenv').config();
 
 const app = express();
-const PORT = process.env.PORT || 5000; 
+const PORT = process.env.PORT || 5000;
+
+const fs = require('fs');
+const path = require('path');
+
+const LOG_FILE = path.join(__dirname, 'logs', 'http_trace.jsonl');
 
 // Middlewares
-app.use(cors()); 
-app.use(express.json()); 
+app.use(cors());
+app.use(express.json());
 
 // Constantes para la API de OpenWeather
 const OPENWEATHER_API_KEY = process.env.OPENWEATHER_API_KEY;
@@ -18,6 +23,22 @@ const OPENWEATHER_BASE_URL = 'https://api.openweathermap.org/data/2.5';
 // URL de ejem: /api/weather/dashboard?cities=London,Paris,Buenos Aires&unit=metric
 app.get('/api/weather/dashboard', async (req, res) => {
   try {
+
+    await sendToWebhook({
+      timestamp: new Date().toISOString(),
+      level: 'info',
+      route: '/dashboard',
+      query: req.query
+    });
+
+    writeToTraceFile({
+      level: 'info',
+      route: req.path,
+      method: req.method,
+      query: req.query,
+      params: req.params
+    });
+
     const { cities, unit = 'metric' } = req.query;
 
     if (!cities) {
@@ -35,11 +56,11 @@ app.get('/api/weather/dashboard', async (req, res) => {
           appid: OPENWEATHER_API_KEY,
         }
       }).then(response => response.data)
-      .catch(error => {
-        // Manejar errores individuales para una ciudad (ej.: nombre mal escrito)
-        console.error(`Error fetching data for ${cityName}:`, error.message);
-        return { error: `Data could not be obtained for: ${cityName}`, name: cityName };
-      })
+        .catch(error => {
+          // Manejar errores individuales para una ciudad (ej.: nombre mal escrito)
+          console.error(`Error fetching data for ${cityName}:`, error.message);
+          return { error: `Data could not be obtained for: ${cityName}`, name: cityName };
+        })
     );
 
     const weatherData = await Promise.all(weatherPromises);
@@ -99,6 +120,21 @@ app.get('/api/weather/forecast/:cityName', async (req, res) => {
     const { cityName } = req.params;
     const { unit = 'metric' } = req.query;
 
+    await sendToWebhook({
+      timestamp: new Date().toISOString(),
+      level: 'info',
+      route: '/forecast/:cityName',
+      query: req.query
+    });
+
+    writeToTraceFile({
+      level: 'info',
+      route: req.path,
+      method: req.method,
+      query: req.query,
+      params: req.params
+    });
+
     const response = await axios.get(`${OPENWEATHER_BASE_URL}/forecast`, {
       params: {
         q: cityName, // Usamos el nombre de la ciudad
@@ -145,6 +181,38 @@ app.get('/api/weather/forecast/:cityName', async (req, res) => {
     }
   }
 });
+
+
+
+// Función para escribir trazas en el archivo JSONL
+const writeToTraceFile = (data) => {
+  try {
+    const logEntry = JSON.stringify({
+      timestamp: new Date().toISOString(),
+      ...data
+    }) + '\n';
+
+    fs.appendFileSync(LOG_FILE, logEntry, 'utf8');
+    console.log('📝 Trace written to file:', data);
+  } catch (error) {
+    console.error('Error writing to trace file:', error);
+  }
+};
+
+const sendToWebhook = async (data) => {
+  const WEBHOOK_URL = 'https://webhook.site/c2c6ff7d-cc34-4bf7-b108-544f2bae00e5';
+  try {
+    console.log('📤 [Server] Webhook Trace:', data);
+
+    await fetch(WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+  } catch (error) {
+    console.error('Error sending webhook from server:', error);
+  }
+};
 
 // Ruta básica para probar que el servidor está funcionando
 app.get('/api/health', (req, res) => {

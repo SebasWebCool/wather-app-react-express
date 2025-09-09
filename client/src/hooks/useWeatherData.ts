@@ -1,33 +1,57 @@
 import { useState, useEffect } from 'react';
 import type { DashboardData } from '../types/weather';
 import { weatherApi } from '../services/weatherApi';
+import { webhookService } from '../services/webhookService'; // Importamos el servicio
 
-// Lista por defecto
 const DEFAULT_CITIES = ['London', 'Paris', 'New York', 'Tokyo', 'Buenos Aires', 'Madrid', 'Berlin'];
 
 export const useWeatherData = () => {
-  // Estados para manejar la data, loading y errores
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedUnit, setSelectedUnit] = useState<'metric' | 'imperial'>('metric');
 
-  // Función para fetch de datos
   const fetchData = async () => {
     try {
       setLoading(true);
       setError(null);
+      
+      // Enviamos traza de inicio
+      await webhookService.sendTrace(
+        webhookService.createEvent('info', 'useWeatherData', 'Fetching weather data started', {
+          cities: DEFAULT_CITIES,
+          unit: selectedUnit
+        })
+      );
+
       const dashboardData = await weatherApi.getDashboard(DEFAULT_CITIES, selectedUnit);
       setData(dashboardData);
+
+      // Enviamos traza de éxito
+      await webhookService.sendTrace(
+        webhookService.createEvent('info', 'useWeatherData', 'Fetching weather data successful', {
+          citiesCount: dashboardData.allCities.length,
+          averageTemp: dashboardData.averageTemp
+        })
+      );
+
     } catch (err: any) {
       console.error('Error fetching weather data:', err);
-      setError(err.response?.data?.error || 'Failed to fetch weather data');
+      const errorMessage = err.response?.data?.error || 'Failed to fetch weather data';
+      setError(errorMessage);
+      
+      //  Enviamos traza de error
+      await webhookService.sendTrace(
+        webhookService.createEvent('error', 'useWeatherData', 'Fetching weather data failed', {
+          error: errorMessage,
+          originalError: err.message
+        })
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  // Efecto para cargar datos cuando el componente se monta o cambia la unidad
   useEffect(() => {
     fetchData();
   }, [selectedUnit]);
@@ -38,6 +62,6 @@ export const useWeatherData = () => {
     error,
     selectedUnit,
     setSelectedUnit,
-    refetch: fetchData, // Para permitir re-intentar
+    refetch: fetchData,
   };
 };
