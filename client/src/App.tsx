@@ -1,10 +1,10 @@
-import { useWeatherData } from './hooks/useWeatherData'
-import './App.css'
+import { useWeatherData } from './hooks/useWeatherData';
+import Dashboard from './components/Dashboard';
+import './App.css';
 
 function App() {
-  const { data, loading, error, selectedUnit, setSelectedUnit } = useWeatherData();
+  const { data, loading, error, selectedUnit, setSelectedUnit, refetch } = useWeatherData();
 
-  // Renderizado condicional basado en el estado
   if (loading) {
     return <div className="loading">Loading weather data...</div>;
   }
@@ -14,31 +14,25 @@ function App() {
       <div className="error">
         <h2>Error</h2>
         <p>{error}</p>
-        <button onClick={() => window.location.reload()}>Try Again</button>
+        <button onClick={refetch}>Try Again</button>
       </div>
     );
   }
 
-  // Si no hay data después de cargar
   if (!data) {
     return <div>No data available</div>;
   }
 
   return (
     <div className="app">
-      <h1>Weather Dashboard</h1>
-      <div>
-        <label>Unit: </label>
-        <select value={selectedUnit} onChange={(e) => setSelectedUnit(e.target.value)}>
-          <option value="metric">°C</option>
-          <option value="imperial">°F</option>
-        </select>
-      </div>
-      
-      <h2>Raw Data from Backend (Proof of Concept)</h2>
-      <pre>{JSON.stringify(data, null, 2)}</pre> 
+      <Dashboard 
+        data={data} 
+        selectedUnit={selectedUnit} 
+        setSelectedUnit={setSelectedUnit}
+        refetch={refetch}
+      />
     </div>
   );
 }
 
-export default App
+export default App;
