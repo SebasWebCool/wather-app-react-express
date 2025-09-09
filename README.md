@@ -39,45 +39,13 @@ Un mini-dashboard meteorológico construido con React + Express que consume la A
 - npm o yarn
 - API key de [OpenWeatherMap](https://openweathermap.org/api)
 
-### 🔌 Fuente/API Elegida
+## 🔌 Fuente/API Elegida
 **OpenWeatherMap API** - Plan Free
 - **Endpoint principal**: `https://api.openweathermap.org/data/2.5/weather?q={city}&units={unit}&appid={API_KEY}`
 - **Endpoint de pronóstico**: `https://api.openweathermap.org/data/2.5/forecast?q={city}&units={unit}&appid={API_KEY}`
 
-## ⚡ Instalación Rápida
-
-1. **Clonar y configurar el proyecto:**
-```bash
-git clone https://github.com/SebasWebCool/wather-app-react-express.git
-cd wather-app-react-express
-
-### 🚀 Cómo Ejecutar
-```bash
-# 1. Clonar repositorio
-git clone <repo-url>
-cd weather-dashboard
-
-# 2. Configurar backend
-cd server
-npm install
-cp .env.example .env
-# Editar .env con tu API key de OpenWeatherMap
-
-# 3. Configurar frontend
-cd ../client
-npm install
-
-# 4. Ejecutar (en terminales separadas)
-# Terminal 1 - Backend (puerto 5000)
-cd server && npm run dev
-
-# Terminal 2 - Frontend (puerto 5173)
-cd client && npm run dev
-
-
-🔑 Variables de Entorno
-env
-# server/.env
+## 🔑 Variables de Entorno
+###env
 OPENWEATHER_API_KEY=tu_api_key_de_openweathermap
 PORT=5000
 📊 Transformaciones Implementadas
@@ -107,7 +75,7 @@ const dailySummary = forecastData.reduce((acc, item) => {
   return acc;
 }, {});
 
-🎨 Decisiones de Diseño y Trade-offs
+## 🎨 Decisiones de Diseño y Trade-offs
 Decisiones:
 
 Proxy backend: Para proteger API key y evitar problemas CORS
@@ -140,3 +108,33 @@ Optimización de las transformaciones de datos
 Generación de documentación y README
 
 El código fue adaptado, modificado y integrado manualmente, asegurando comprensión completa de la implementación.
+
+## ⚡ Instalación Rápida
+
+1. **Clonar y configurar el proyecto:**
+```bash
+git clone https://github.com/SebasWebCool/wather-app-react-express.git
+cd wather-app-react-express
+
+### 🚀 Cómo Ejecutar
+```bash
+# 1. Clonar repositorio
+git clone <repo-url>
+cd weather-dashboard
+
+# 2. Configurar backend
+cd server
+npm install
+cp .env.example .env
+# Editar .env con tu API key de OpenWeatherMap
+
+# 3. Configurar frontend
+cd ../client
+npm install
+
+# 4. Ejecutar (en terminales separadas)
+# Terminal 1 - Backend (puerto 5000)
+cd server && npm run dev
+
+# Terminal 2 - Frontend (puerto 5173)
+cd client && npm run dev
