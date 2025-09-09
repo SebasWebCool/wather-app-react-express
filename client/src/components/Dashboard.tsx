@@ -1,10 +1,12 @@
+// App.jsx
 import { useWeatherData } from './hooks/useWeatherData'
 import './App.css'
 
 function App() {
+  // Usamos nuestro custom hook
   const { data, loading, error, selectedUnit, setSelectedUnit } = useWeatherData();
 
-  // Renderizado condicional basado en el estado
+  // Renderizado condicional para los estados
   if (loading) {
     return <div className="loading">Loading weather data...</div>;
   }
@@ -24,6 +26,7 @@ function App() {
     return <div>No data available</div>;
   }
 
+  // ¡ÉXITO! Mostramos los datos en crudo para verificar que todo funciona
   return (
     <div className="app">
       <h1>Weather Dashboard</h1>
@@ -37,6 +40,7 @@ function App() {
       
       <h2>Raw Data from Backend (Proof of Concept)</h2>
       <pre>{JSON.stringify(data, null, 2)}</pre> 
+      {/* Esto mostrará el JSON completo. Lo quitaremos en el siguiente paso. */}
     </div>
   );
 }
